@@ -1,0 +1,18 @@
+<div ng-controller="scoreController">
+	<div id="scoreboard">
+		<table class="table">
+			<thead>
+				<tr>
+					<td>Name</td>
+					<td>Score</td>
+				</tr>
+			</thead>
+			<tbody>
+				<tr ng-repeat="user in scores">
+					<td><span ng-bind="user.userName"></span></td>
+					<td><span ng-bind="user.score"></span></td>
+				</tr>
+			</tbody>
+		</table>
+ 		<span class="btn-green"  ng-click="buttonClicked()"></span>
+</div>

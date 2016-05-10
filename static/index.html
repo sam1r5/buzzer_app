@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html ng-app="game">
+<head>
+	<style type="text/css">
+/*		@keyframes example{
+		    0%   {background-color: red;}
+		    25%  {background-color: yellow;}
+		    50%  {background-color: blue;}
+		    75%  {background-color: white;}
+		    100% {background-color: green;}
+		}
+		body{
+			background-color: white;
+		    animation-name: example;
+		    animation-duration: 1s;
+		    animation-iteration-count: 0;
+		    animation-direction: reverse;
+		}*/
+		body {
+		  background: none repeat scroll 0 0 #71AFDF;
+		  text-align: center;
+		  margin-top: 50px;
+		}
+
+		span {
+		  margin: 0 10px;
+		}
+
+		.btn-blue {
+		  background: #108FE8;
+		  border: 3px solid #fff;
+		  border-radius: 100%;
+		  box-shadow: 0 -2px 0 3px #0d72b8 inset, 0 5px 5px rgba(3, 25, 41, 0.17), 0 15px rgba(255, 255, 255, 0.25) inset;
+		  cursor: pointer;
+		  display: inline-block;
+		  height: 5vw;
+		  width: 5vw;
+		}
+		.btn-blue:hover {
+		  background: #333;
+		  box-shadow: 0 -2px 0 3px #1a1a1a inset, 0 5px 5px rgba(0, 0, 0, 0.17), 0 15px rgba(255, 255, 255, 0.32) inset;
+		}
+
+		.btn-red {
+		  background: #E53030;
+		  border: 3px solid #fff;
+		  border-radius: 100%;
+		  box-shadow: 0 -2px 0 3px #c91919 inset, 0 5px 5px rgba(65, 8, 8, 0.17), 0 15px rgba(255, 255, 255, 0.25) inset;
+		  cursor: pointer;
+		  display: inline-block;
+		  height: 5vw;
+		  width: 5vw;
+		}
+		.btn-red:hover {
+		  background: #333;
+		  box-shadow: 0 -2px 0 3px #1a1a1a inset, 0 5px 5px rgba(0, 0, 0, 0.17), 0 15px rgba(255, 255, 255, 0.32) inset;
+		}
+
+		.btn-green {
+		  background: #0EC518;
+		  border: 3px solid #fff;
+		  border-radius: 100%;
+		  box-shadow: 0 -2px 0 3px #0b9512 inset, 0 5px 5px rgba(0, 7, 1, 0.17), 0 15px rgba(255, 255, 255, 0.25) inset;
+		  cursor: pointer;
+		  display: inline-block;
+		  height: 5vw;
+		  width: 5vw;
+		}
+		.btn-green:hover {
+		  background: #333;
+		  box-shadow: 0 -2px 0 3px #1a1a1a inset, 0 5px 5px rgba(0, 0, 0, 0.17), 0 15px rgba(255, 255, 255, 0.32) inset;
+		}
+
+		.btn-yellow {
+		  background: #FFC334;
+		  border: 3px solid #fff;
+		  border-radius: 100%;
+		  box-shadow: 0 -2px 0 3px #ffb401 inset, 0 5px 5px rgba(103, 73, 0, 0.17), 0 15px rgba(255, 255, 255, 0.25) inset;
+		  cursor: pointer;
+		  display: inline-block;
+		  height: 5vw;
+		  width: 5vw;
+		}
+		.btn-yellow:hover {
+		  background: #333;
+		  box-shadow: 0 -2px 0 3px #1a1a1a inset, 0 5px 5px rgba(0, 0, 0, 0.17), 0 15px rgba(255, 255, 255, 0.32) inset;
+		}
+	</style>
+	<title></title>
+	<link rel="stylesheet" href="../node_modules/bootstrap/dist/css/bootstrap.min.css">
+	<!-- load angular and the angular routes-->
+	<script src="./../node_modules/angular/angular.min.js"></script>
+	<script src="./../node_modules/angular-route/angular-route.min.js"></script>
+	<script src="./../node_modules/angular-animate/angular-animate.min.js"></script>
+	<script src="./../node_modules/angular-touch/angular-touch.js"></script>
+	<script src="./../node_modules/angular-sanitize/angular-sanitize.min.js"></script>
+	<script src="./../node_modules/angular-ui-bootstrap/dist/ui-bootstrap-tpls.js"></script>
+	<!-- load momentJS (required for angular-moment) -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.9.0/moment.min.js"></script>
+    <!-- load angular-moment -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/angular-moment/0.9.0/angular-moment.min.js"></script>	
+    <script type ="text/javascript" src="/socket.io/socket.io.js"></script>
+    <script type="text/javascript">
+	    var user;
+	    var socket = io.connect();
+    	    //callback helper function
+	    var setUserName = function(callback){
+	    	if(!user){
+	    		user = prompt("Enter your name to enter the game")
+	    	}
+	    	callback();
+	    }
+	    //when a user connects they emit thier userName so the socket property of socket.userName can be set
+    	socket.on('connect', function(){
+    		setUserName(function(){
+    			socket.emit("setUserName", user);
+    		})
+    	});
+    	//start of angular
+	    var app = angular.module('game', ['ui.bootstrap', 'ngRoute']);
+	    app.config(function($routeProvider){
+	    	$routeProvider
+	    	.when('/', {templateUrl: 'partials/gamestart.html', controller: "gameStartController"})
+	    	.when('/inProgress', {templateUrl: 'partials/inProgress.html', controller: "scoreController"})
+	    	.when('/pause', {templateUrl: 'partials/pause.html', controller: "pauseController"})
+	    })
+	    app.factory("scoreFactory", function($http){
+	    	var factory = {};
+	    	var score = [];
+    		socket.on('updateScore', function(usersInfo){
+    			score = usersInfo;
+    			console.log(score);
+    		})
+	    	factory.updateScore = function(){
+	    		socket.emit('pointScore', {})
+
+	    	}
+	    	factory.getUsersInfo = function(callback){
+			    socket.emit('getUsersInfo', {});
+		    	socket.on('usersScores', function(usersInfo){
+		    		score = usersInfo;
+			    	callback(score);
+		    	});	
+	    	}
+	    	return factory;
+	    })
+	    app.controller("gameStartController", function($scope, $location, scoreFactory){
+	    	socket.emit('getOpenRooms', {})
+	    	socket.on('sendOpenRooms', function(rooms){
+	    		$scope.openGames = rooms;
+	    		$scope.$apply();
+	    	})
+	    	$scope.pickGame = function(game){
+	    		console.log(game);
+	    		socket.emit('joinRoom', game);
+	    		$location.path('/inProgress');
+	    	}
+	    	$scope.createNewGame = function(game){
+	    		socket.emit('createRoom', game);
+	    		$scope.newGame = '';
+	    		$location.path('/inProgress');
+	    	}
+	    })
+	    app.controller("scoreController", function(scoreFactory, $timeout, $scope, $location){
+	    	scoreFactory.getUsersInfo(function(userInfo){
+	    		$scope.scores = userInfo
+	    		$scope.$apply();
+	    	})
+	    	$scope.buttonClicked = function(){
+	    		socket.emit("buzzerWinner", socket.id);
+	    	}
+    		socket.on('changeToPause', function(data){
+    			$timeout(function(){
+	    			$location.path('/pause');
+    			})
+    		})
+	    })
+	    app.controller("pauseController", function($scope, $timeout, $location, $sce){
+	    	socket.emit('getBuzzerWinner', {});
+	    	socket.on('sendBuzzerWinner', function(name){
+	    		$scope.buzzerWinnerName = name;
+	    		$scope.$apply();
+	    	})
+	    	socket.on('adminPauseDashboard', function(message){
+				//get the html needed for thje button to change the score. 
+	    	})
+	    	socket.on('changeToInProgress', function(){
+    			$timeout(function(){
+	    			$location.path('/inProgress');
+    			})    	
+	    	})
+	    	socket.on('adminButtons', function(adminButtons){
+	    		var text  = adminButtons;
+	    		text = $sce.trustAsHtml(text);
+	    		$scope.adminButtons = text;
+	    		$scope.$apply();
+	    	})
+	    	$scope.pointScore = function(){
+				socket.emit('pointScore', $scope.buzzerWinnerName.socketId)
+	    	}
+	    	$scope.reset = function(){
+	    		socket.emit('resetToInProgress',{});
+	    	}
+	    })
+
+    </script>
+</head>
+<body> 
+	<div ng-view=""></div>
+</body>
+</html>

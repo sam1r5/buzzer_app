@@ -1,0 +1,12 @@
+<div id="create-game">
+	<form ng-submit="createNewGame(newGame)">
+		<label>Create a new game<input type="text" ng-model="newGame"></label>
+		<button>Create Game</button>
+	</form>
+</div>
+<div id="open-games">
+	<form ng-submit="pickGame(selected)">
+		<select ng-model="selected" ng-options="openGames as openGames for openGames in openGames"></select>
+		<button>Select Room</button>
+	</form>
+</div>
